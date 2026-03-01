@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trash2, FileText } from 'lucide-react';
+import { Plus, FileText } from 'lucide-react';
 import { getAllQuizzes, deleteQuiz, QuizListItem } from '../api/quizzes';
 import UpdateButton from '../components/UpdateButton';
 import DeleteButton from '../components/DeleteButton';
@@ -61,7 +61,7 @@ export default function QuizList() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900">Quiz Dashboard</h1>
+            <h1 className="text-4xl font-bold text-gray-900">Quiz Management</h1>
             <p className="text-gray-600 mt-2">Manage and view all your quizzes</p>
           </div>
           <button
