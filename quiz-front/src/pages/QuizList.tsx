@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Trash2, FileText } from 'lucide-react';
+import { Plus, FileText } from 'lucide-react';
 import { getAllQuizzes, deleteQuiz, QuizListItem } from '../api/quizzes';
+import UpdateButton from '../components/UpdateButton';
+import DeleteButton from '../components/DeleteButton';
 
 export default function QuizList() {
   const navigate = useNavigate();
@@ -59,7 +61,7 @@ export default function QuizList() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="text-4xl font-bold text-gray-900">Quiz Dashboard</h1>
+            <h1 className="text-4xl font-bold text-gray-900">All Quizzes</h1>
             <p className="text-gray-600 mt-2">Manage and view all your quizzes</p>
           </div>
           <button
@@ -129,19 +131,19 @@ export default function QuizList() {
                   </div>
                 </div>
 
-                <div className="px-6 pb-4">
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDelete(quiz.id, quiz.title);
-                    }}
-                    disabled={deletingId === quiz.id}
-                    className="w-full flex items-center justify-center gap-2 text-red-600 hover:text-white hover:bg-red-600 border border-red-200 hover:border-red-600 px-4 py-2 rounded-lg font-medium transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    <Trash2 size={16} />
-                    {deletingId === quiz.id ? 'Deleting...' : 'Delete Quiz'}
-                  </button>
+                <div className="px-6 pb-4 flex gap-3">
+                  {/* Update Button */}
+                  <UpdateButton quizId={quiz.id} />
+
+                  {/* Delete Button */}
+                  <DeleteButton
+                    quizId={quiz.id}
+                    quizTitle={quiz.title}
+                    deletingId={deletingId}
+                    handleDelete={handleDelete}
+                  />
                 </div>
+
               </div>
             ))}
           </div>

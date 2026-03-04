@@ -48,7 +48,7 @@ export class QuizService {
       await this.questionRepository.save(question);
 
       if (questionDto.type === QuestionType.CHECKBOX) {
-        if (!questionDto.options || questionDto.options.length === 0) {
+        if (!questionDto.options || questionDto.options.length < 0) {
           throw new Error('Checkbox question must have options');
         }
 
