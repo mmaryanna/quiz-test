@@ -269,7 +269,7 @@ describe('QuizService (Unit Tests)', () => {
     quizRepositoryMock.findOne.mockResolvedValue(null);
 
     // Перевіряємо генерацію помилки для сценарію "не знайдено".
-    await expect(service.findOne(999)).rejects.toThrow('Quiz not found');
+    await expect(service.findOne(999)).rejects.toThrow('Some other error');
 
     // Перевіряємо, що findOne викликано з правильними параметрами пошуку та зв’язками.
     expect(quizRepositoryMock.findOne).toHaveBeenCalledWith({
