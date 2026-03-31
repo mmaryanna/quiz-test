@@ -6,7 +6,8 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:5173',
-      'http://localhost:4173'
+      'http://localhost:4173',
+      'https://*.vercel.app',
     ]
   });
   await app.listen(process.env.PORT ?? 3000);
