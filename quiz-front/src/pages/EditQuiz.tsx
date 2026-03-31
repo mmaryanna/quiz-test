@@ -1,7 +1,7 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Plus, Trash2, ArrowLeft } from 'lucide-react';
-import { createQuiz, Question } from '../api/quizzes';
+import { useEffect, useState } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { ArrowLeft, Trash2, Plus } from 'lucide-react';
+import { getQuizById, updateQuiz, Question } from '../api/quizzes';
 
 type QuestionType = 'BOOLEAN' | 'INPUT' | 'CHECKBOX';
 
@@ -14,13 +14,44 @@ interface OptionForm {
   isCorrect: boolean;
 }
 
-export default function CreateQuiz() {
+export default function EditQuiz() {
   const navigate = useNavigate();
+  const { id } = useParams();
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [questions, setQuestions] = useState<QuestionForm[]>([]);
   const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [error, setError] = useState('');
+
+  useEffect(() => {
+    if (id) {
+      loadQuiz(id);
+    }
+  }, [id]);
+
+  const loadQuiz = async (quizId: string) => {
+    try {
+      setPageLoading(true);
+      const quiz = await getQuizById(quizId);
+
+      setTitle(quiz.title);
+      setDescription(quiz.description || '');
+
+      const preparedQuestions: QuestionForm[] = quiz.questions.map((q) => ({
+        ...q,
+        id: q.id || crypto.randomUUID(),
+      }));
+
+      setQuestions(preparedQuestions);
+      setError('');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load quiz');
+    } finally {
+      setPageLoading(false);
+    }
+  };
 
   const addQuestion = (type: QuestionType) => {
     const newQuestion: QuestionForm = {
@@ -31,56 +62,76 @@ export default function CreateQuiz() {
       ...(type === 'INPUT' && { correctText: '' }),
       ...(type === 'CHECKBOX' && { options: [{ text: '', isCorrect: false }] }),
     };
+
     setQuestions([...questions, newQuestion]);
   };
 
-  const removeQuestion = (id: string) => {
-    setQuestions(questions.filter(q => q.id !== id));
+  const removeQuestion = (questionId: string) => {
+    setQuestions(questions.filter((q) => q.id !== questionId));
   };
 
-  const updateQuestion = (id: string, updates: Partial<QuestionForm>) => {
-    setQuestions(questions.map(q => q.id === id ? { ...q, ...updates } : q));
+  const updateQuestion = (questionId: string, updates: Partial<QuestionForm>) => {
+    setQuestions(
+      questions.map((q) => (q.id === questionId ? { ...q, ...updates } : q))
+    );
   };
 
   const addOption = (questionId: string) => {
-    setQuestions(questions.map(q => {
-      if (q.id === questionId && q.type === 'CHECKBOX') {
-        return {
-          ...q,
-          options: [...(q.options || []), { text: '', isCorrect: false }],
-        };
-      }
-      return q;
-    }));
+    setQuestions(
+      questions.map((q) => {
+        if (q.id === questionId && q.type === 'CHECKBOX') {
+          return {
+            ...q,
+            options: [...(q.options || []), { text: '', isCorrect: false }],
+          };
+        }
+        return q;
+      })
+    );
   };
 
   const removeOption = (questionId: string, optionIndex: number) => {
-    setQuestions(questions.map(q => {
-      if (q.id === questionId && q.type === 'CHECKBOX') {
-        return {
-          ...q,
-          options: q.options?.filter((_, i) => i !== optionIndex),
-        };
-      }
-      return q;
-    }));
+    setQuestions(
+      questions.map((q) => {
+        if (q.id === questionId && q.type === 'CHECKBOX') {
+          return {
+            ...q,
+            options: q.options?.filter((_, i) => i !== optionIndex),
+          };
+        }
+        return q;
+      })
+    );
   };
 
-  const updateOption = (questionId: string, optionIndex: number, updates: Partial<OptionForm>) => {
-    setQuestions(questions.map(q => {
-      if (q.id === questionId && q.type === 'CHECKBOX') {
-        return {
-          ...q,
-          options: q.options?.map((opt, i) => i === optionIndex ? { ...opt, ...updates } : opt),
-        };
-      }
-      return q;
-    }));
+  const updateOption = (
+    questionId: string,
+    optionIndex: number,
+    updates: Partial<OptionForm>
+  ) => {
+    setQuestions(
+      questions.map((q) => {
+        if (q.id === questionId && q.type === 'CHECKBOX') {
+          return {
+            ...q,
+            options: q.options?.map((opt, i) =>
+              i === optionIndex ? { ...opt, ...updates } : opt
+            ),
+          };
+        }
+        return q;
+      })
+    );
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!id) {
+      setError('Quiz id not found');
+      return;
+    }
 
     if (!title.trim()) {
       setError('Please enter a quiz title');
@@ -97,20 +148,24 @@ export default function CreateQuiz() {
         setError('All questions must have text');
         return;
       }
+
       if (q.type === 'INPUT' && !q.correctText?.trim()) {
         setError('All input questions must have a correct answer');
         return;
       }
+
       if (q.type === 'CHECKBOX') {
         if (!q.options || q.options.length < 2) {
           setError('Checkbox questions must have at least 2 options');
           return;
         }
-        if (!q.options.some(opt => opt.isCorrect)) {
+
+        if (!q.options.some((opt) => opt.isCorrect)) {
           setError('Checkbox questions must have at least one correct answer');
           return;
         }
-        if (q.options.some(opt => !opt.text.trim())) {
+
+        if (q.options.some((opt) => !opt.text.trim())) {
           setError('All options must have text');
           return;
         }
@@ -118,19 +173,31 @@ export default function CreateQuiz() {
     }
 
     setLoading(true);
+
     try {
-      const questionsData = questions.map((question) => {
-        const q = { ...question };
-        delete (q as Partial<QuestionForm>).id;
-        return q;
+      const questionsData = questions.map(({ id, ...rest }) => rest);
+
+      await updateQuiz(id, {
+        title,
+        description,
+        questions: questionsData,
       });
-      await createQuiz({ title, description, questions: questionsData });
+
       navigate('/quizzes');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to create quiz');
+      setError(err instanceof Error ? err.message : 'Failed to update quiz');
+    } finally {
       setLoading(false);
     }
   };
+
+  if (pageLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-lg">
+        Loading quiz...
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4">
@@ -143,8 +210,9 @@ export default function CreateQuiz() {
             <ArrowLeft size={20} />
             Back to Quizzes
           </button>
-          <h1 className="text-4xl font-bold text-gray-900">Create New Quiz</h1>
-          <p className="text-gray-600 mt-2">Build your custom quiz with various question types</p>
+
+          <h1 className="text-4xl font-bold text-gray-900">Edit Quiz</h1>
+          <p className="text-gray-600 mt-2">Update your quiz information</p>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -162,6 +230,7 @@ export default function CreateQuiz() {
                   placeholder="Enter quiz title"
                 />
               </div>
+
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Description
@@ -207,26 +276,37 @@ export default function CreateQuiz() {
 
             {questions.length === 0 && (
               <div className="bg-white rounded-xl shadow-sm p-12 border border-gray-200 text-center">
-                <p className="text-gray-500">No questions yet. Click a button above to add your first question.</p>
+                <p className="text-gray-500">No questions in this quiz yet.</p>
               </div>
             )}
 
             {questions.map((question, index) => (
-              <div key={question.id} className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+              <div
+                key={question.id}
+                className="bg-white rounded-xl shadow-sm p-6 border border-gray-200"
+              >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
                     <span className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-sm font-semibold text-gray-700">
                       {index + 1}
                     </span>
-                    <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                      question.type === 'BOOLEAN' ? 'bg-green-100 text-green-700' :
-                      question.type === 'INPUT' ? 'bg-blue-100 text-blue-700' :
-                      'bg-purple-100 text-purple-700'
-                    }`}>
-                      {question.type === 'BOOLEAN' ? 'True/False' :
-                       question.type === 'INPUT' ? 'Text Input' : 'Multiple Choice'}
+                    <span
+                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        question.type === 'BOOLEAN'
+                          ? 'bg-green-100 text-green-700'
+                          : question.type === 'INPUT'
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'bg-purple-100 text-purple-700'
+                      }`}
+                    >
+                      {question.type === 'BOOLEAN'
+                        ? 'True/False'
+                        : question.type === 'INPUT'
+                        ? 'Text Input'
+                        : 'Multiple Choice'}
                     </span>
                   </div>
+
                   <button
                     type="button"
                     onClick={() => removeQuestion(question.id)}
@@ -244,7 +324,11 @@ export default function CreateQuiz() {
                     <input
                       type="text"
                       value={question.questionText}
-                      onChange={(e) => updateQuestion(question.id, { questionText: e.target.value })}
+                      onChange={(e) =>
+                        updateQuestion(question.id, {
+                          questionText: e.target.value,
+                        })
+                      }
                       className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                       placeholder="Enter your question"
                     />
@@ -260,16 +344,21 @@ export default function CreateQuiz() {
                           <input
                             type="radio"
                             checked={question.correctAnswer === true}
-                            onChange={() => updateQuestion(question.id, { correctAnswer: true })}
+                            onChange={() =>
+                              updateQuestion(question.id, { correctAnswer: true })
+                            }
                             className="w-4 h-4 text-blue-600"
                           />
                           <span className="text-gray-700">True</span>
                         </label>
+
                         <label className="flex items-center gap-2 cursor-pointer">
                           <input
                             type="radio"
                             checked={question.correctAnswer === false}
-                            onChange={() => updateQuestion(question.id, { correctAnswer: false })}
+                            onChange={() =>
+                              updateQuestion(question.id, { correctAnswer: false })
+                            }
                             className="w-4 h-4 text-blue-600"
                           />
                           <span className="text-gray-700">False</span>
@@ -286,9 +375,13 @@ export default function CreateQuiz() {
                       <input
                         type="text"
                         value={question.correctText || ''}
-                        onChange={(e) => updateQuestion(question.id, { correctText: e.target.value })}
+                        onChange={(e) =>
+                          updateQuestion(question.id, {
+                            correctText: e.target.value,
+                          })
+                        }
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                        placeholder="Enter the correct answer"
+                        placeholder="Enter correct answer"
                       />
                     </div>
                   )}
@@ -308,19 +401,28 @@ export default function CreateQuiz() {
                           Add Option
                         </button>
                       </div>
+
                       <div className="space-y-2">
                         {question.options?.map((option, optIndex) => (
                           <div key={optIndex} className="flex items-center gap-2">
                             <input
                               type="checkbox"
                               checked={option.isCorrect}
-                              onChange={(e) => updateOption(question.id, optIndex, { isCorrect: e.target.checked })}
+                              onChange={(e) =>
+                                updateOption(question.id, optIndex, {
+                                  isCorrect: e.target.checked,
+                                })
+                              }
                               className="w-4 h-4 text-blue-600 rounded"
                             />
                             <input
                               type="text"
                               value={option.text}
-                              onChange={(e) => updateOption(question.id, optIndex, { text: e.target.value })}
+                              onChange={(e) =>
+                                updateOption(question.id, optIndex, {
+                                  text: e.target.value,
+                                })
+                              }
                               className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
                               placeholder={`Option ${optIndex + 1}`}
                             />
@@ -355,8 +457,9 @@ export default function CreateQuiz() {
               disabled={loading}
               className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating Quiz...' : 'Create Quiz'}
+              {loading ? 'Updating Quiz...' : 'Update Quiz'}
             </button>
+
             <button
               type="button"
               onClick={() => navigate('/quizzes')}

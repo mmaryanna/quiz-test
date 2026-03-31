@@ -6,6 +6,7 @@ const headers = {
 };
 
 export interface Question {
+  id?: string;
   type: 'BOOLEAN' | 'INPUT' | 'CHECKBOX';
   questionText: string;
   correctAnswer?: boolean;
@@ -34,7 +35,15 @@ export interface CreateQuizRequest {
   questions: Question[];
 }
 
-export const createQuiz = async (quiz: CreateQuizRequest): Promise<{ id: string; title: string }> => {
+export interface UpdateQuizRequest {
+  title: string;
+  description?: string;
+  questions: Question[];
+}
+
+export const createQuiz = async (
+  quiz: CreateQuizRequest
+): Promise<{ id: string; title: string }> => {
   const response = await fetch(API_URL, {
     method: 'POST',
     headers,
@@ -87,4 +96,22 @@ export const deleteQuiz = async (id: string): Promise<void> => {
     const error = await response.json();
     throw new Error(error.error || 'Failed to delete quiz');
   }
+};
+
+export const updateQuiz = async (
+  id: string,
+  quiz: UpdateQuizRequest
+): Promise<Quiz> => {
+  const response = await fetch(`${API_URL}/${id}`, {
+    method: 'PATCH',
+    headers,
+    body: JSON.stringify(quiz),
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    throw new Error(error.error || 'Failed to update quiz');
+  }
+
+  return response.json();
 };
