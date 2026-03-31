@@ -23,17 +23,22 @@ jobs:
         with:
           node-version: 18
 
-      - name: Install dependencies
+      - name: Install frontend dependencies
         run: |
           cd quiz-front
           npm ci
 
-      - name: Run linter
+      - name: Run frontend linter
         run: |
           cd quiz-front
           npm run lint
 
-      - name: Run unit tests
+      - name: Install backend dependencies
         run: |
-          cd quiz-front
-          npm run test:unit
+          cd quiz-backend
+          npm ci
+
+      - name: Run backend unit tests
+        run: |
+          cd quiz-backend
+          npm test
