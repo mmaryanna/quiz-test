@@ -288,7 +288,10 @@ describe('QuizService (Unit Tests)', () => {
     await service.deleteQuiz(5);
 
     // Перевіряємо, що спочатку виконано пошук, а потім видалення знайденої сутності.
-    expect(quizRepositoryMock.findOne).toHaveBeenCalledWith({ where: { id: 5 } });
+    expect(quizRepositoryMock.findOne).toHaveBeenCalledWith({
+      where: { id: 5 },
+      relations: ['questions', 'questions.options'],
+    });
     expect(quizRepositoryMock.remove).toHaveBeenCalledWith(quizEntity);
   });
 });
