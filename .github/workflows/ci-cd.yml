@@ -1,0 +1,44 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: Install frontend dependencies
+        run: |
+          cd quiz-front
+          npm ci
+
+      - name: Run frontend linter
+        run: |
+          cd quiz-front
+          npm run lint
+
+      - name: Install backend dependencies
+        run: |
+          cd quiz-backend
+          npm ci
+
+      - name: Run backend unit tests
+        run: |
+          cd quiz-backend
+          npm test

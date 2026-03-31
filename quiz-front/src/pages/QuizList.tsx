@@ -37,7 +37,7 @@ export default function QuizList() {
     try {
       setDeletingId(id);
       await deleteQuiz(id);
-      setQuizzes(quizzes.filter(q => q.id !== id));
+      setQuizzes(quizzes.filter((q) => q.id !== id));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete quiz');
     } finally {
@@ -52,7 +52,7 @@ export default function QuizList() {
       month: 'short',
       day: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -64,6 +64,7 @@ export default function QuizList() {
             <h1 className="text-4xl font-bold text-gray-900">All Quizzes</h1>
             <p className="text-gray-600 mt-2">Manage and view all your quizzes</p>
           </div>
+
           <button
             onClick={() => navigate('/create')}
             className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
@@ -88,6 +89,7 @@ export default function QuizList() {
             <FileText size={48} className="mx-auto text-gray-400 mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No quizzes yet</h3>
             <p className="text-gray-600 mb-6">Get started by creating your first quiz</p>
+
             <button
               onClick={() => navigate('/create')}
               className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
@@ -125,17 +127,18 @@ export default function QuizList() {
                         {quiz.questionCount} {quiz.questionCount === 1 ? 'Question' : 'Questions'}
                       </div>
                     </div>
-                    <span className="text-xs text-gray-500">
-                      {formatDate(quiz.createdAt)}
-                    </span>
+
+                    {quiz.createdAt && (
+                      <span className="text-xs text-gray-500">
+                        {formatDate(quiz.createdAt)}
+                      </span>
+                    )}
                   </div>
                 </div>
 
                 <div className="px-6 pb-4 flex gap-3">
-                  {/* Update Button */}
                   <UpdateButton quizId={quiz.id} />
 
-                  {/* Delete Button */}
                   <DeleteButton
                     quizId={quiz.id}
                     quizTitle={quiz.title}
@@ -143,7 +146,6 @@ export default function QuizList() {
                     handleDelete={handleDelete}
                   />
                 </div>
-
               </div>
             ))}
           </div>

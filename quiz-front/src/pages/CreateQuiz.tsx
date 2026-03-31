@@ -119,7 +119,11 @@ export default function CreateQuiz() {
 
     setLoading(true);
     try {
-      const questionsData = questions.map(({ id, ...q }) => q);
+      const questionsData = questions.map((question) => {
+        const q = { ...question };
+        delete (q as Partial<QuestionForm>).id;
+        return q;
+      });
       await createQuiz({ title, description, questions: questionsData });
       navigate('/quizzes');
     } catch (err) {
