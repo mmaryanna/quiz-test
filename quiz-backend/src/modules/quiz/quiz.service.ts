@@ -48,7 +48,7 @@ export class QuizService {
       await this.questionRepository.save(question);
 
       if (questionDto.type === QuestionType.CHECKBOX) {
-        if (!questionDto.options || questionDto.options.length < 0) {
+        if (!questionDto.options || questionDto.options.length <= 0) {
           throw new Error('Checkbox question must have options');
         }
 
@@ -173,13 +173,13 @@ export class QuizService {
     throw new Error('Quiz not found');
   }
 
-  for (const question of quiz.questions) {
+  for (const question of quiz.questions ?? []) {
     if (question.options?.length) {
       await this.optionRepository.remove(question.options);
     }
   }
 
-  if (quiz.questions.length) {
+  if (quiz.questions?.length) {
     await this.questionRepository.remove(quiz.questions);
   }
 
