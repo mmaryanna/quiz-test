@@ -175,7 +175,10 @@ export default function EditQuiz() {
     setLoading(true);
 
     try {
-      const questionsData = questions.map(({ id, ...rest }) => rest);
+      const questionsData = questions.map((question) => {
+        const { id: _id, ...rest } = question;
+        return rest;
+      });
 
       await updateQuiz(id, {
         title,
@@ -191,285 +194,284 @@ export default function EditQuiz() {
     }
   };
 
-  if (pageLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center text-lg">
-        Loading quiz...
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="mb-8">
-          <button
-            onClick={() => navigate('/quizzes')}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
-          >
-            <ArrowLeft size={20} />
-            Back to Quizzes
-          </button>
-
-          <h1 className="text-4xl font-bold text-gray-900">Edit Quiz</h1>
-          <p className="text-gray-600 mt-2">Update your quiz information</p>
+    if (pageLoading) {
+      return (
+        <div className="min-h-screen flex items-center justify-center text-lg">
+          Loading quiz...
         </div>
+      );
+    }
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Quiz Title *
-                </label>
-                <input
-                  type="text"
-                  value={title}
-                  onChange={(e) => setTitle(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                  placeholder="Enter quiz title"
-                />
-              </div>
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="mb-8">
+            <button
+              onClick={() => navigate('/quizzes')}
+              className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors mb-4"
+            >
+              <ArrowLeft size={20} />
+              Back to Quizzes
+            </button>
 
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Description
-                </label>
-                <textarea
-                  value={description}
-                  onChange={(e) => setDescription(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
-                  rows={3}
-                  placeholder="Enter quiz description"
-                />
-              </div>
-            </div>
+            <h1 className="text-4xl font-bold text-gray-900">Edit Quiz</h1>
+            <p className="text-gray-600 mt-2">Update your quiz information</p>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h2 className="text-2xl font-bold text-gray-900">Questions</h2>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => addQuestion('BOOLEAN')}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
-                >
-                  + True/False
-                </button>
-                <button
-                  type="button"
-                  onClick={() => addQuestion('INPUT')}
-                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
-                >
-                  + Text Input
-                </button>
-                <button
-                  type="button"
-                  onClick={() => addQuestion('CHECKBOX')}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
-                >
-                  + Multiple Choice
-                </button>
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="bg-white rounded-xl shadow-sm p-6 border border-gray-200">
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Quiz Title *
+                  </label>
+                  <input
+                    type="text"
+                    value={title}
+                    onChange={(e) => setTitle(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                    placeholder="Enter quiz title"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Description
+                  </label>
+                  <textarea
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all resize-none"
+                    rows={3}
+                    placeholder="Enter quiz description"
+                  />
+                </div>
               </div>
             </div>
 
-            {questions.length === 0 && (
-              <div className="bg-white rounded-xl shadow-sm p-12 border border-gray-200 text-center">
-                <p className="text-gray-500">No questions in this quiz yet.</p>
-              </div>
-            )}
-
-            {questions.map((question, index) => (
-              <div
-                key={question.id}
-                className="bg-white rounded-xl shadow-sm p-6 border border-gray-200"
-              >
-                <div className="flex items-start justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <span className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-sm font-semibold text-gray-700">
-                      {index + 1}
-                    </span>
-                    <span
-                      className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        question.type === 'BOOLEAN'
-                          ? 'bg-green-100 text-green-700'
-                          : question.type === 'INPUT'
-                          ? 'bg-blue-100 text-blue-700'
-                          : 'bg-purple-100 text-purple-700'
-                      }`}
-                    >
-                      {question.type === 'BOOLEAN'
-                        ? 'True/False'
-                        : question.type === 'INPUT'
-                        ? 'Text Input'
-                        : 'Multiple Choice'}
-                    </span>
-                  </div>
-
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-2xl font-bold text-gray-900">Questions</h2>
+                <div className="flex gap-2">
                   <button
                     type="button"
-                    onClick={() => removeQuestion(question.id)}
-                    className="text-red-500 hover:text-red-700 transition-colors p-1"
+                    onClick={() => addQuestion('BOOLEAN')}
+                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm font-medium"
                   >
-                    <Trash2 size={18} />
+                    + True/False
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addQuestion('INPUT')}
+                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium"
+                  >
+                    + Text Input
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => addQuestion('CHECKBOX')}
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm font-medium"
+                  >
+                    + Multiple Choice
                   </button>
                 </div>
+              </div>
 
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-2">
-                      Question Text *
-                    </label>
-                    <input
-                      type="text"
-                      value={question.questionText}
-                      onChange={(e) =>
-                        updateQuestion(question.id, {
-                          questionText: e.target.value,
-                        })
-                      }
-                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                      placeholder="Enter your question"
-                    />
+              {questions.length === 0 && (
+                <div className="bg-white rounded-xl shadow-sm p-12 border border-gray-200 text-center">
+                  <p className="text-gray-500">No questions in this quiz yet.</p>
+                </div>
+              )}
+
+              {questions.map((question, index) => (
+                <div
+                  key={question.id}
+                  className="bg-white rounded-xl shadow-sm p-6 border border-gray-200"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="flex items-center gap-3">
+                      <span className="flex items-center justify-center w-8 h-8 bg-gray-100 rounded-full text-sm font-semibold text-gray-700">
+                        {index + 1}
+                      </span>
+                      <span
+                        className={`px-3 py-1 rounded-full text-xs font-semibold ${question.type === 'BOOLEAN'
+                            ? 'bg-green-100 text-green-700'
+                            : question.type === 'INPUT'
+                              ? 'bg-blue-100 text-blue-700'
+                              : 'bg-purple-100 text-purple-700'
+                          }`}
+                      >
+                        {question.type === 'BOOLEAN'
+                          ? 'True/False'
+                          : question.type === 'INPUT'
+                            ? 'Text Input'
+                            : 'Multiple Choice'}
+                      </span>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={() => removeQuestion(question.id)}
+                      className="text-red-500 hover:text-red-700 transition-colors p-1"
+                    >
+                      <Trash2 size={18} />
+                    </button>
                   </div>
 
-                  {question.type === 'BOOLEAN' && (
+                  <div className="space-y-4">
                     <div>
                       <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Correct Answer *
-                      </label>
-                      <div className="flex gap-4">
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            checked={question.correctAnswer === true}
-                            onChange={() =>
-                              updateQuestion(question.id, { correctAnswer: true })
-                            }
-                            className="w-4 h-4 text-blue-600"
-                          />
-                          <span className="text-gray-700">True</span>
-                        </label>
-
-                        <label className="flex items-center gap-2 cursor-pointer">
-                          <input
-                            type="radio"
-                            checked={question.correctAnswer === false}
-                            onChange={() =>
-                              updateQuestion(question.id, { correctAnswer: false })
-                            }
-                            className="w-4 h-4 text-blue-600"
-                          />
-                          <span className="text-gray-700">False</span>
-                        </label>
-                      </div>
-                    </div>
-                  )}
-
-                  {question.type === 'INPUT' && (
-                    <div>
-                      <label className="block text-sm font-semibold text-gray-700 mb-2">
-                        Correct Answer *
+                        Question Text *
                       </label>
                       <input
                         type="text"
-                        value={question.correctText || ''}
+                        value={question.questionText}
                         onChange={(e) =>
                           updateQuestion(question.id, {
-                            correctText: e.target.value,
+                            questionText: e.target.value,
                           })
                         }
                         className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                        placeholder="Enter correct answer"
+                        placeholder="Enter your question"
                       />
                     </div>
-                  )}
 
-                  {question.type === 'CHECKBOX' && (
-                    <div>
-                      <div className="flex items-center justify-between mb-2">
-                        <label className="block text-sm font-semibold text-gray-700">
-                          Options * (check correct answers)
+                    {question.type === 'BOOLEAN' && (
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Correct Answer *
                         </label>
-                        <button
-                          type="button"
-                          onClick={() => addOption(question.id)}
-                          className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
-                        >
-                          <Plus size={16} />
-                          Add Option
-                        </button>
-                      </div>
+                        <div className="flex gap-4">
+                          <label className="flex items-center gap-2 cursor-pointer">
+                            <input
+                              type="radio"
+                              checked={question.correctAnswer === true}
+                              onChange={() =>
+                                updateQuestion(question.id, { correctAnswer: true })
+                              }
+                              className="w-4 h-4 text-blue-600"
+                            />
+                            <span className="text-gray-700">True</span>
+                          </label>
 
-                      <div className="space-y-2">
-                        {question.options?.map((option, optIndex) => (
-                          <div key={optIndex} className="flex items-center gap-2">
+                          <label className="flex items-center gap-2 cursor-pointer">
                             <input
-                              type="checkbox"
-                              checked={option.isCorrect}
-                              onChange={(e) =>
-                                updateOption(question.id, optIndex, {
-                                  isCorrect: e.target.checked,
-                                })
+                              type="radio"
+                              checked={question.correctAnswer === false}
+                              onChange={() =>
+                                updateQuestion(question.id, { correctAnswer: false })
                               }
-                              className="w-4 h-4 text-blue-600 rounded"
+                              className="w-4 h-4 text-blue-600"
                             />
-                            <input
-                              type="text"
-                              value={option.text}
-                              onChange={(e) =>
-                                updateOption(question.id, optIndex, {
-                                  text: e.target.value,
-                                })
-                              }
-                              className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
-                              placeholder={`Option ${optIndex + 1}`}
-                            />
-                            {question.options && question.options.length > 2 && (
-                              <button
-                                type="button"
-                                onClick={() => removeOption(question.id, optIndex)}
-                                className="text-red-500 hover:text-red-700 transition-colors p-1"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            )}
-                          </div>
-                        ))}
+                            <span className="text-gray-700">False</span>
+                          </label>
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
+
+                    {question.type === 'INPUT' && (
+                      <div>
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">
+                          Correct Answer *
+                        </label>
+                        <input
+                          type="text"
+                          value={question.correctText || ''}
+                          onChange={(e) =>
+                            updateQuestion(question.id, {
+                              correctText: e.target.value,
+                            })
+                          }
+                          className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                          placeholder="Enter correct answer"
+                        />
+                      </div>
+                    )}
+
+                    {question.type === 'CHECKBOX' && (
+                      <div>
+                        <div className="flex items-center justify-between mb-2">
+                          <label className="block text-sm font-semibold text-gray-700">
+                            Options * (check correct answers)
+                          </label>
+                          <button
+                            type="button"
+                            onClick={() => addOption(question.id)}
+                            className="text-sm text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                          >
+                            <Plus size={16} />
+                            Add Option
+                          </button>
+                        </div>
+
+                        <div className="space-y-2">
+                          {question.options?.map((option, optIndex) => (
+                            <div key={optIndex} className="flex items-center gap-2">
+                              <input
+                                type="checkbox"
+                                checked={option.isCorrect}
+                                onChange={(e) =>
+                                  updateOption(question.id, optIndex, {
+                                    isCorrect: e.target.checked,
+                                  })
+                                }
+                                className="w-4 h-4 text-blue-600 rounded"
+                              />
+                              <input
+                                type="text"
+                                value={option.text}
+                                onChange={(e) =>
+                                  updateOption(question.id, optIndex, {
+                                    text: e.target.value,
+                                  })
+                                }
+                                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all"
+                                placeholder={`Option ${optIndex + 1}`}
+                              />
+                              {question.options && question.options.length > 2 && (
+                                <button
+                                  type="button"
+                                  onClick={() => removeOption(question.id, optIndex)}
+                                  className="text-red-500 hover:text-red-700 transition-colors p-1"
+                                >
+                                  <Trash2 size={16} />
+                                </button>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              {error}
+              ))}
             </div>
-          )}
 
-          <div className="flex gap-4">
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Updating Quiz...' : 'Update Quiz'}
-            </button>
+            {error && (
+              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                {error}
+              </div>
+            )}
 
-            <button
-              type="button"
-              onClick={() => navigate('/quizzes')}
-              className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
-            >
-              Cancel
-            </button>
-          </div>
-        </form>
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 bg-blue-600 text-white py-3 px-6 rounded-lg font-semibold hover:bg-blue-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? 'Updating Quiz...' : 'Update Quiz'}
+              </button>
+
+              <button
+                type="button"
+                onClick={() => navigate('/quizzes')}
+                className="px-6 py-3 border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
-    </div>
-  );
-}
+    );
+  }
