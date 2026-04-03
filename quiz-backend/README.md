@@ -1,3 +1,4 @@
+[![CI/CD Pipeline](https://github.com/mmaryanna/quiz-test/actions/workflows/ci-cd.yml/badge.svg)](https://github.com/mmaryanna/quiz-test/actions/workflows/ci-cd.yml)
 # Quiz Backend (NestJS)
 
 ## Description
