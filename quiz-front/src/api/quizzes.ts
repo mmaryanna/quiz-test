@@ -1,4 +1,4 @@
-const API_URL = `${import.meta.env.VITE_URL}/quizzes`;
+const API_URL = `${import.meta.env.VITE_URL}`;
 // const API_URL = 'http://localhost:3000/quizzes';
 
 const headers = {
