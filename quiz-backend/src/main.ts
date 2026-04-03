@@ -8,7 +8,9 @@ async function bootstrap() {
       'http://localhost:5173',
       'http://localhost:4173',
       'https://quiz-test-sepia.vercel.app',
-    ]
+      'https://quiz-test-task-beta.vercel.app',
+    ],
+    credentials: true,
   });
   await app.listen(process.env.PORT ?? 3000);
 }
