@@ -1,3 +1,4 @@
+<img width="1543" height="319" alt="image" src="https://github.com/user-attachments/assets/65671f1e-773d-4e1a-a9e8-fb3364d14f3e" />
 # Quiz Frontend (React + Vite)
 
 ## Description
