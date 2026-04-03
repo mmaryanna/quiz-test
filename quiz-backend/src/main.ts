@@ -9,6 +9,7 @@ async function bootstrap() {
       'http://localhost:4173',
       'https://quiz-test-sepia.vercel.app',
       'https://quiz-test-task-beta.vercel.app',
+      'https://quiz-test-task-deploy-rjqf.vercel.app',
     ],
     credentials: true,
   });
