@@ -3,22 +3,23 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-"scripts": {
-  "dev": "vite",
-  "build": "vite build",
-  "lint": "eslint .",
-  "preview": "vite preview",
-  "typecheck": "tsc --noEmit -p tsconfig.app.json",
-  "test": "vitest",
-  "test:unit": "vitest run",
-  "test:run": "vitest run",
-  "test:cov": "vitest run --coverage",
-  "test:e2e": "playwright test",
-  "test:e2e:ui": "playwright test --ui"
-},
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit -p tsconfig.app.json",
+    "test": "vitest",
+    "test:unit": "vitest run",
+    "test:run": "vitest run",
+    "test:cov": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.4",
     "lucide-react": "^0.344.0",
+    "posthog-js": "^1.368.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^7.12.0"
