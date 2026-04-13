@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, FileText } from 'lucide-react';
+import posthog from 'posthog-js'; 
 import { getAllQuizzes, deleteQuiz, QuizListItem } from '../api/quizzes';
 import UpdateButton from '../components/UpdateButton';
 import DeleteButton from '../components/DeleteButton';
@@ -65,8 +66,12 @@ export default function QuizList() {
             <p className="text-gray-600 mt-2">Manage and view all your quizzes</p>
           </div>
 
+          {/* 🔥 ОСНОВНА КНОПКА */}
           <button
-            onClick={() => navigate('/create')}
+            onClick={() => {
+              posthog.capture("open_create_page"); // 👈 ДОДАЛИ
+              navigate('/create');
+            }}
             className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
           >
             <Plus size={20} />
@@ -90,8 +95,12 @@ export default function QuizList() {
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No quizzes yet</h3>
             <p className="text-gray-600 mb-6">Get started by creating your first quiz</p>
 
+            {/* 🔥 КНОПКА ДЛЯ ПУСТОГО СТАНУ */}
             <button
-              onClick={() => navigate('/create')}
+              onClick={() => {
+                posthog.capture("open_create_page"); // 👈 ДОДАЛИ
+                navigate('/create');
+              }}
               className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
             >
               <Plus size={20} />
