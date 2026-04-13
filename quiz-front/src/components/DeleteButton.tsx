@@ -1,4 +1,5 @@
 import { Trash2 } from "lucide-react";
+import posthog from "posthog-js";
 
 type DeleteButtonProps = {
   quizId: string;
@@ -19,6 +20,13 @@ export default function DeleteButton({
     <button
       onClick={(e) => {
         e.stopPropagation();
+
+        posthog.capture("task_deleted", {
+          quiz_id: quizId,
+          quiz_title: quizTitle,
+          reason: "user_deleted",
+        });
+
         handleDelete(quizId, quizTitle);
       }}
       disabled={isDeleting}
