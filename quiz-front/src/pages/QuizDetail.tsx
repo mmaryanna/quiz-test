@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { ArrowLeft, CheckCircle2, XCircle, Eye, EyeOff } from "lucide-react";
 import { getQuizById, Quiz } from "../api/quizzes";
+import posthog from "posthog-js";
 
 interface UserAnswers {
   [questionIndex: number]: {
@@ -462,7 +463,16 @@ export default function QuizDetail() {
           {!submitted && (
             <div className="mb-6">
               <button
-                onClick={() => setSubmitted(true)}
+                onClick={() => {
+                  setSubmitted(true);
+
+                  posthog.capture("task_completed", {
+                    quiz_id: id,
+                    total_questions: quiz.questions.length,
+                    score_correct: score.correct,
+                    score_total: score.total,
+                  });
+                }}
                 className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-4 px-6 rounded-xl shadow-lg transition-all transform hover:scale-[1.02]"
               >
                 Submit Quiz
