@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, FileText } from 'lucide-react';
-import posthog from 'posthog-js'; 
+import posthog from 'posthog-js';
 import { getAllQuizzes, deleteQuiz, QuizListItem } from '../api/quizzes';
 import UpdateButton from '../components/UpdateButton';
 import DeleteButton from '../components/DeleteButton';
@@ -12,9 +12,18 @@ export default function QuizList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [showRecentOnly, setShowRecentOnly] = useState(false);
 
   useEffect(() => {
     loadQuizzes();
+
+    posthog.onFeatureFlags(() => {
+      if (posthog.isFeatureEnabled('show-recent-quizzes')) {
+        setShowRecentOnly(true);
+      } else {
+        setShowRecentOnly(false);
+      }
+    });
   }, []);
 
   const loadQuizzes = async () => {
@@ -57,6 +66,17 @@ export default function QuizList() {
     });
   };
 
+  const recentQuizzes = quizzes.filter((quiz) => {
+    if (!quiz.createdAt) return false;
+    const createdDate = new Date(quiz.createdAt);
+    const now = new Date();
+    const diffTime = now.getTime() - createdDate.getTime();
+    const diffDays = diffTime / (1000 * 60 * 60 * 24);
+    return diffDays <= 7;
+  });
+
+  const displayedQuizzes = showRecentOnly ? recentQuizzes : quizzes;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4">
       <div className="max-w-6xl mx-auto">
@@ -66,10 +86,9 @@ export default function QuizList() {
             <p className="text-gray-600 mt-2">Manage and view all your quizzes</p>
           </div>
 
-          {/* 🔥 ОСНОВНА КНОПКА */}
           <button
             onClick={() => {
-              posthog.capture("open_create_page"); // 👈 ДОДАЛИ
+              posthog.capture("open_create_page");
               navigate('/create');
             }}
             className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
@@ -78,6 +97,12 @@ export default function QuizList() {
             Create New Quiz
           </button>
         </div>
+
+        {showRecentOnly && (
+          <div className="mb-6 text-sm text-blue-700 bg-blue-50 border border-blue-200 px-4 py-2 rounded-lg">
+            Showing only quizzes created in the last 7 days
+          </div>
+        )}
 
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
@@ -89,16 +114,15 @@ export default function QuizList() {
           <div className="flex items-center justify-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
-        ) : quizzes.length === 0 ? (
+        ) : displayedQuizzes.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-12 border border-gray-200 text-center">
             <FileText size={48} className="mx-auto text-gray-400 mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No quizzes yet</h3>
             <p className="text-gray-600 mb-6">Get started by creating your first quiz</p>
 
-            {/* 🔥 КНОПКА ДЛЯ ПУСТОГО СТАНУ */}
             <button
               onClick={() => {
-                posthog.capture("open_create_page"); // 👈 ДОДАЛИ
+                posthog.capture("open_create_page");
                 navigate('/create');
               }}
               className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
@@ -109,7 +133,7 @@ export default function QuizList() {
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-            {quizzes.map((quiz) => (
+            {displayedQuizzes.map((quiz) => (
               <div
                 key={quiz.id}
                 className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-lg transition-all group"
@@ -147,7 +171,6 @@ export default function QuizList() {
 
                 <div className="px-6 pb-4 flex gap-3">
                   <UpdateButton quizId={quiz.id} />
-
                   <DeleteButton
                     quizId={quiz.id}
                     quizTitle={quiz.title}
