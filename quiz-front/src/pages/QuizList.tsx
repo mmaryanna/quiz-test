@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Plus, FileText } from 'lucide-react';
 import posthog from 'posthog-js';
@@ -12,17 +12,16 @@ export default function QuizList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [deletingId, setDeletingId] = useState<string | null>(null);
-  const [showRecentOnly, setShowRecentOnly] = useState(false);
+  const [showRecentFilterButton, setShowRecentFilterButton] = useState(false);
+  const [recentOnly, setRecentOnly] = useState(false);
 
   useEffect(() => {
     loadQuizzes();
 
     posthog.onFeatureFlags(() => {
-      if (posthog.isFeatureEnabled('show-recent-quizzes')) {
-        setShowRecentOnly(true);
-      } else {
-        setShowRecentOnly(false);
-      }
+      setShowRecentFilterButton(
+        !!posthog.isFeatureEnabled('show-recent-quizzes')
+      );
     });
   }, []);
 
@@ -66,16 +65,20 @@ export default function QuizList() {
     });
   };
 
-  const recentQuizzes = quizzes.filter((quiz) => {
-    if (!quiz.createdAt) return false;
-    const createdDate = new Date(quiz.createdAt);
-    const now = new Date();
-    const diffTime = now.getTime() - createdDate.getTime();
-    const diffDays = diffTime / (1000 * 60 * 60 * 24);
-    return diffDays <= 7;
-  });
+  const displayedQuizzes = useMemo(() => {
+    if (!recentOnly) return quizzes;
 
-  const displayedQuizzes = showRecentOnly ? recentQuizzes : quizzes;
+    return quizzes.filter((quiz) => {
+      if (!quiz.createdAt) return false;
+
+      const createdDate = new Date(quiz.createdAt);
+      const now = new Date();
+      const diffTime = now.getTime() - createdDate.getTime();
+      const diffDays = diffTime / (1000 * 60 * 60 * 24);
+
+      return diffDays <= 7;
+    });
+  }, [quizzes, recentOnly]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4">
@@ -88,7 +91,7 @@ export default function QuizList() {
 
           <button
             onClick={() => {
-              posthog.capture("open_create_page");
+              posthog.capture('open_create_page');
               navigate('/create');
             }}
             className="flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
@@ -98,9 +101,18 @@ export default function QuizList() {
           </button>
         </div>
 
-        {showRecentOnly && (
-          <div className="mb-6 text-sm text-blue-700 bg-blue-50 border border-blue-200 px-4 py-2 rounded-lg">
-            Showing only quizzes created in the last 7 days
+        {showRecentFilterButton && quizzes.length > 0 && (
+          <div className="mb-6 flex items-center gap-3">
+            <button
+              onClick={() => setRecentOnly((prev) => !prev)}
+              className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                recentOnly
+                  ? 'bg-blue-600 text-white hover:bg-blue-700'
+                  : 'bg-white text-blue-700 border border-blue-200 hover:bg-blue-50'
+              }`}
+            >
+              {recentOnly ? 'Show All Quizzes' : 'Show Last 7 Days'}
+            </button>
           </div>
         )}
 
@@ -114,7 +126,7 @@ export default function QuizList() {
           <div className="flex items-center justify-center py-20">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
-        ) : displayedQuizzes.length === 0 ? (
+        ) : quizzes.length === 0 ? (
           <div className="bg-white rounded-xl shadow-sm p-12 border border-gray-200 text-center">
             <FileText size={48} className="mx-auto text-gray-400 mb-4" />
             <h3 className="text-xl font-semibold text-gray-900 mb-2">No quizzes yet</h3>
@@ -122,13 +134,30 @@ export default function QuizList() {
 
             <button
               onClick={() => {
-                posthog.capture("open_create_page");
+                posthog.capture('open_create_page');
                 navigate('/create');
               }}
               className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
             >
               <Plus size={20} />
               Create Your First Quiz
+            </button>
+          </div>
+        ) : displayedQuizzes.length === 0 ? (
+          <div className="bg-white rounded-xl shadow-sm p-12 border border-gray-200 text-center">
+            <FileText size={48} className="mx-auto text-gray-400 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-900 mb-2">
+              No recent quizzes found
+            </h3>
+            <p className="text-gray-600 mb-6">
+              There are no quizzes created in the last 7 days.
+            </p>
+
+            <button
+              onClick={() => setRecentOnly(false)}
+              className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 transition-colors"
+            >
+              Show All Quizzes
             </button>
           </div>
         ) : (
@@ -157,7 +186,8 @@ export default function QuizList() {
                   <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                     <div className="flex items-center gap-2">
                       <div className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-semibold">
-                        {quiz.questionCount} {quiz.questionCount === 1 ? 'Question' : 'Questions'}
+                        {quiz.questionCount}{' '}
+                        {quiz.questionCount === 1 ? 'Question' : 'Questions'}
                       </div>
                     </div>
 
