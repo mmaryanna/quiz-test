@@ -65,20 +65,33 @@ export default function QuizList() {
     });
   };
 
-  const displayedQuizzes = useMemo(() => {
-    if (!recentOnly) return quizzes;
+const displayedQuizzes = useMemo(() => {
+  if (!recentOnly) return quizzes;
 
-    return quizzes.filter((quiz) => {
-      if (!quiz.createdAt) return false;
+  const today = new Date();
+  today.setHours(23, 59, 59, 999);
 
-      const createdDate = new Date(quiz.createdAt);
-      const now = new Date();
-      const diffTime = now.getTime() - createdDate.getTime();
-      const diffDays = diffTime / (1000 * 60 * 60 * 24);
+  const sevenDaysAgo = new Date();
+  sevenDaysAgo.setDate(today.getDate() - 6);
+  sevenDaysAgo.setHours(0, 0, 0, 0);
 
-      return diffDays <= 7;
-    });
-  }, [quizzes, recentOnly]);
+  return quizzes.filter((quiz) => {
+    if (!quiz.createdAt) return false;
+
+    const normalizedDate = quiz.createdAt.includes(' ')
+      ? quiz.createdAt.replace(' ', 'T')
+      : quiz.createdAt;
+
+    const createdDate = new Date(normalizedDate);
+
+    if (isNaN(createdDate.getTime())) {
+      console.log('Invalid quiz date:', quiz.title, quiz.createdAt);
+      return false;
+    }
+
+    return createdDate >= sevenDaysAgo && createdDate <= today;
+  });
+}, [quizzes, recentOnly]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 py-12 px-4">
